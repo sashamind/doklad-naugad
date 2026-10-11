@@ -18,7 +18,7 @@ function euphony(p, next){
   return p;
 }
 
-// шаблоны: noun/adj/verb/prep/fixed; case — фиксированный падеж, from — индекс предлога, agree — индекс существительного
+// шаблоны: noun/adj/verb/prep/intj/fixed; case — фиксированный падеж, from — индекс предлога, agree — индекс существительного, comma — запятая перед словом
 const PATTERNS = [
   [{k:'adj',agree:1,c:0},{k:'noun',c:0},{k:'noun',c:1}],
   [{k:'noun',c:0},{k:'prep'},{k:'noun',from:1}],
@@ -31,12 +31,14 @@ const PATTERNS = [
   [{k:'prep'},{k:'adj',agree:2,from:0},{k:'noun',from:0}],
   [{k:'noun',c:0},{k:'fixed',t:'как'},{k:'noun',c:0}],
   [{k:'noun',c:0},{k:'fixed',t:'и'},{k:'noun',c:0}],
+  [{k:'adj',agree:1,c:0},{k:'noun',c:0},{k:'intj',comma:true}],
 ];
 const PATTERNS2 = [
   [{k:'adj',agree:1,c:0},{k:'noun',c:0}],
   [{k:'noun',c:0},{k:'noun',c:1}],
   [{k:'verb'},{k:'noun',c:3}],
   [{k:'prep'},{k:'noun',from:0}],
+  [{k:'noun',c:0},{k:'intj',comma:true}],
 ];
 const PATTERNS4 = [
   [{k:'adj',agree:1,c:0},{k:'noun',c:0},{k:'prep'},{k:'noun',from:2}],
@@ -46,12 +48,23 @@ const PATTERNS4 = [
   [{k:'verb'},{k:'noun',c:3},{k:'prep'},{k:'noun',from:2}],
   [{k:'noun',c:0},{k:'fixed',t:'и'},{k:'adj',agree:3,c:0},{k:'noun',c:0}],
   [{k:'noun',c:0},{k:'noun',c:1},{k:'prep'},{k:'noun',from:2}],
+  [{k:'verb'},{k:'adj',agree:2,c:3},{k:'noun',c:3},{k:'intj',comma:true}],
 ];
-// длина названия: 10% — два слова, 80% — три, 10% — четыре
-function pickPattern(){ const r=Math.random(); return rnd(r<.1?PATTERNS2:r<.9?PATTERNS:PATTERNS4); }
+const PATTERNS5 = [
+  [{k:'adj',agree:1,c:0},{k:'noun',c:0},{k:'prep'},{k:'adj',agree:4,from:2},{k:'noun',from:2}],
+  [{k:'verb'},{k:'adj',agree:2,c:3},{k:'noun',c:3},{k:'prep'},{k:'noun',from:3}],
+  [{k:'fixed',t:'как'},{k:'verb'},{k:'noun',c:3},{k:'prep'},{k:'noun',from:3}],
+  [{k:'noun',c:0},{k:'noun',c:1},{k:'prep'},{k:'adj',agree:4,from:2},{k:'noun',from:2}],
+  [{k:'noun',c:0},{k:'fixed',t:'и'},{k:'noun',c:0},{k:'prep'},{k:'noun',from:3}],
+  [{k:'fixed',t:'как'},{k:'verb'},{k:'adj',agree:3,c:3},{k:'noun',c:3},{k:'noun',c:1}],
+  [{k:'adj',agree:1,c:0},{k:'noun',c:0},{k:'fixed',t:'и'},{k:'adj',agree:4,c:0},{k:'noun',c:0}],
+  [{k:'prep'},{k:'adj',agree:2,from:0},{k:'noun',from:0},{k:'adj',agree:4,c:1},{k:'noun',c:1}],
+];
+// длина названия: 10% — два слова, 75% — три, 10% — четыре, 5% — пять
+function pickPattern(){ const r=Math.random(); return rnd(r<.1?PATTERNS2:r<.85?PATTERNS:r<.95?PATTERNS4:PATTERNS5); }
 
 const rnd = a => a[Math.floor(Math.random()*a.length)];
-const pool = k => k==='noun'?NOUNS:k==='adj'?ADJ:k==='verb'?VERBS:k==='prep'?PREPS:null;
+const pool = k => k==='noun'?NOUNS:k==='adj'?ADJ:k==='verb'?VERBS:k==='prep'?PREPS:k==='intj'?INTJ:null;
 function pickFor(slots, i){
   const s=slots[i], P=pool(s.k); if(!P) return null;
   const used=slots.filter((o,j)=>j!==i && o.k===s.k).map(o=>o.lex);
@@ -72,11 +85,13 @@ function words(){
     if(s.k==='noun') return s.lex.f[caseOf(s)];
     if(s.k==='adj') return adjForm(s.lex, slots[s.agree].lex, caseOf(s));
     if(s.k==='verb') return s.lex;
+    if(s.k==='intj') return s.lex+'!';
     if(s.k==='fixed') return s.t;
     return null;
   });
   slots.forEach((s,i)=>{ if(s.k==='prep'){ const n=slots[i+1]; out[i]=euphony(s.lex[0], n&&!n.skip?out[i+1]:null); } });
-  return out.map((w,i)=>slots[i].skip?'…':w).map((w,i)=> i===0 && w!=='…' && w!=='ИИ' ? w[0].toUpperCase()+w.slice(1) : w);
+  return out.map((w,i)=>slots[i].skip?'…':w).map((w,i)=> i===0 && w!=='…' && w!=='ИИ' ? w[0].toUpperCase()+w.slice(1) : w)
+    .map((w,i,a)=> slots[i+1]&&slots[i+1].comma ? w+',' : w);
 }
 const text = () => words().join(' ');
 
