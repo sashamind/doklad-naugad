@@ -182,12 +182,22 @@ async function downloadPng(){
   draw(bar.querySelector('b'),th.fg); draw($('meta'),th.fg); draw($('when'),th.fg);
   titleEl.querySelectorAll('.w').forEach(w=>draw(w,w.classList.contains('gap')?th.dim:th.fg));
   draw($('who'),th.dim); draw($('lvl'),th.dim); draw($('role'),th.dim);
-  cv.toBlob(blob=>{
-    const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=text()+'.png';
+  cv.toBlob(async blob=>{
+    const name=text()+'.png';
+    // на телефоне открываем системное меню «Поделиться»: из него картинка сохраняется в галерею
+    if(matchMedia('(pointer:coarse)').matches && navigator.canShare){
+      const file=new File([blob],name,{type:'image/png'});
+      if(navigator.canShare({files:[file]})){
+        try{ await navigator.share({files:[file]}); return; }
+        catch(e){ if(e.name==='AbortError') return; }
+      }
+    }
+    const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=name;
     document.body.append(a); a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(a.href),1000);
   },'image/png');
 }
 $('png').onclick=downloadPng;
+if(matchMedia('(pointer:coarse)').matches && navigator.canShare) $('png').textContent='Сохранить картинку';
 new ResizeObserver(fit).observe(slide);
 document.fonts && document.fonts.ready.then(fit);
 
