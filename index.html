@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Доклад наугад</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Onest:wght@400;500;800;900&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>Доклад наугад</h1>
+    <p>Словарь собран из программы Дизайн-выходных, Тула, 9–10 октября</p>
+  </header>
+
+  <section class="slide" id="slide" aria-live="polite">
+    <div class="bar"><span><b>Дизайн-выходные</b></span><span id="meta">Зал 4 · Навыки дизайнера</span></div>
+    <div class="area" id="area"><h2 id="title"></h2></div>
+    <div class="foot">
+      <div class="who"><span class="name"><span id="who"></span> <span class="lvl" id="lvl">■</span></span><span class="role" id="role"></span></div>
+      <div id="when" style="text-align:right">10 октября · 15:30</div>
+    </div>
+  </section>
+
+  <div class="controls">
+    <button class="main" id="gen">Сгенерировать</button>
+    <button id="copy">Скопировать</button>
+    <button id="png">Скачать PNG</button>
+  </div>
+  <p class="hint"><kbd>Пробел</kbd> — новое название.</p>
+
+  <section class="hist"><h2>Было</h2><ol id="hist"><li class="empty">Пока пусто</li></ol></section>
+</div>
+
+<script src="words.js"></script>
+<script src="script.js"></script>
+</body>
+</html>
